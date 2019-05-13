@@ -17,6 +17,13 @@ limitations under the License.
 {% set BASE_NAME = env['deployment'] + '-' + env['name'] %}
 
 resources:
+- name: tcp-firewall-rule
+  type: compute.v1.firewall
+  properties:
+    sourceRanges: ["0.0.0.0/0"]
+    allowed:
+    - IPProtocol: TCP
+      ports: ["80"]
 - name: {{ BASE_NAME }}
   type: compute.v1.instance
   properties:
@@ -42,3 +49,6 @@ resources:
       accessConfigs:
       - name: External NAT
         type: ONE_TO_ONE_NAT
+  outputs:
+  - name: vm_ip
+    value: $(ref.{{ BASE_NAME }}.networkInterfaces[0].accessConfigs[0].natIP)
