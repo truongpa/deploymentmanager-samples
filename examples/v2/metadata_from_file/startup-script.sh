@@ -1,16 +1,15 @@
-#!/bin/bash
-# Copyright 2016 Google Inc. All rights reserved.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+#! /bin/bash
+apt-get update
+apt-get install -y apache2
 
-python -m SimpleHTTPServer 8080
+HTML_START="<html><body><h1>VM Metadata From Startup Script</h1><pre>"
+HTML_END="</pre></body></html>"
+
+VM_METADATA=$(curl "http://metadata.google.internal/computeMetadata/v1/instance/?recursive=true&alt=text" -H "Metadata-Flavor: Google")
+
+# Encode HTML characters
+VM_METADATA=$(echo "$VM_METADATA"|sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g; s/"/\&quot;/g; s/'"'"'/\&#39;/g')
+
+FILE_CONTENTS="$HTML_START$VM_METADATA$HTML_END"
+
+echo "$FILE_CONTENTS" > /var/www/html/index.html
